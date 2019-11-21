@@ -48,13 +48,27 @@ class App extends Component {
     console.log("Erreur attrapée: ", error);
   };
 
+  handleClickTerm = (e, termId) => {
+    console.log("Dans handleClickTerm");
+    //appel de la méthode qui récupère les cartes
+    this.fetch.getCards(termId, this.successCards, this.failureCards);
+  };
+
+  successCards = () => {
+    console.log("Dans successCards");
+  };
+
+  failureCards = () => {
+    console.log("Dans failureCards");
+  };
+
   render() {
     return (
       <div className="App">
         <header>
           <h1>Memo</h1>
           {/*appel du component na avec les bons paramètres*/}
-          <Nav terms={this.state.terms} />
+          <Nav onClickTerm={this.handleClickTerm} terms={this.state.terms} />
         </header>
       </div>
     );

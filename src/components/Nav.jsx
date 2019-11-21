@@ -9,8 +9,10 @@ class Nav extends Component {
         <ul>
           {this.props.terms.map(term => (
             <li
+              //ajout événement au clic
               onClick={e => {
                 console.log("click sur term", term.id);
+                this.props.onClickTerm(e, term.id);
               }}
               className="btn btn-secondary mr-1 mb-2"
               key={term.id}
