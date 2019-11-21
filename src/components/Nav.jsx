@@ -8,7 +8,15 @@ class Nav extends Component {
       <nav>
         <ul>
           {this.props.terms.map(term => (
-            <li key={term.id}>{term.name}</li>
+            <li
+              onClick={e => {
+                console.log("click sur term", term.id);
+              }}
+              className="btn btn-secondary mr-1 mb-2"
+              key={term.id}
+            >
+              {term.name}
+            </li>
           ))}
         </ul>
       </nav>
