@@ -6,7 +6,8 @@ import Fetch from "./services/Fetch";
 class App extends Component {
   state = {
     //ADN de ce que je veux afficher
-    terms: []
+    terms: [],
+    columns: []
   };
   // Nouvelle propriété de ma classe
   fetch = {};
@@ -51,11 +52,18 @@ class App extends Component {
   handleClickTerm = (e, termId) => {
     console.log("Dans handleClickTerm");
     //appel de la méthode qui récupère les cartes
-    this.fetch.getCards(termId, this.successCards, this.failureCards);
+    this.fetch.createReqCards(termId, this.successCards, this.failureCards);
   };
 
-  successCards = () => {
+  successCards = data => {
     console.log("Dans successCards");
+    //clone du state
+    const copyState = { ...this.state };
+    //affectation des datas à la propriété columns
+    copyState.columns = data;
+    this.setState(copyState);
+    //this.setState(prevState => (prevState.columns = data));
+    console.log("state ", this.state);
   };
 
   failureCards = () => {
