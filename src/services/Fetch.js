@@ -2,9 +2,9 @@ class Fetch {
   constructor(url_basis) {
     this.url_basis = url_basis;
     this.token = "";
-    this.id = "45";
-    this.login = "val";
-    this.pwd = "val";
+    this.id = "43";
+    this.login = "vcoquinot";
+    this.pwd = "vcoquinot";
   }
   getToken(success, failure) {
     fetch(this.url_basis + "rest/session/token/")
@@ -48,6 +48,11 @@ class Fetch {
           // réponse soit dans le bon format
           response.json().then(function(data) {
             console.log("terms : ", data);
+            //on ajoute aux termes une propriété "selected"
+            //à chaque élément du tableau data  (donc parcours du tableau)
+            for (const term of data) {
+              term.selected = false;
+            }
             // On appelle le callback
             success(data);
           });
@@ -101,11 +106,104 @@ class Fetch {
           ele.show_reponse = false;
         });
       });
+      //On remet les colonnes dans l'ordre (par id) grâce à sort
+      function compare(a, b) {
+        if (a.id < b.id) {
+          return -1;
+        }
+        if (a.id > b.id) {
+          return 1;
+        }
+        return 0;
+      }
+      jsonResponse.sort(compare);
+
       callbackSuccess(jsonResponse, termNumber);
     } else {
       // On y est pas encore, voici le statut actuel
       console.log("Pb getCards - Statut : ", req.status, req.statusText);
     }
+  };
+
+  createReqEditCard = (card, themeid, callbackSuccess, callbackFailed) => {
+    console.log("Dans createReqEditCard de fetch");
+    //Destructuring
+    //comme dans l'objet card
+    const { id, question, reponse, colonne } = card;
+
+    // création de la requête
+    // utilisation de fetch
+    //this.url_serveur : propriété de fetch
+    //tout est spécifié par api avec laquelle on communique
+    //format hal_json propre à drupal
+    fetch(this.url_basis + "node/" + id + "?_format=hal_json", {
+      // permet d'accepter les cookies ?
+      credentials: "same-origin",
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/hal+json",
+        //permet identification
+        "X-CSRF-Token": this.token,
+        Authorization: "Basic " + btoa(this.login + ":" + this.pwd) // btoa = encodage en base 64
+      },
+      //Json transformé en string
+      body: JSON.stringify({
+        //type de cntenu carte
+        _links: {
+          type: {
+            href: this.url_basis + "rest/type/node/carte"
+          }
+        },
+        title: [
+          {
+            value: question
+          }
+        ],
+        field_carte_question: [
+          {
+            value: question
+          }
+        ],
+        field_carte_reponse: [
+          {
+            value: reponse
+          }
+        ],
+        //relation carte et élément de taxonomie Drupal
+        field_carte_colonne: [
+          {
+            //nom du champs drupal et id
+            target_id: colonne,
+            url: "/taxonomy/term/" + colonne
+          }
+        ],
+        field_carte_thematique: [
+          {
+            target_id: themeid,
+            url: "/taxonomy/term/" + themeid
+          }
+        ],
+        type: [
+          {
+            target_id: "carte"
+          }
+        ]
+      })
+    })
+      //si la réponse st au format Json
+      .then(response => response.json())
+      //je récupère la data
+      .then(data => {
+        console.log("data reçues :", data);
+        //si j'ai bien de la data pas vide
+        if (data) {
+          //Modification de la carte sur le serveur directement
+          //themeid : refresh de toutes les cartes => term (ex:css)
+          callbackSuccess(themeid);
+        } else {
+          callbackFailed("Erreur de login ou de mot de passe");
+        }
+      });
   };
 }
 
